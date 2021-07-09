@@ -1,0 +1,49 @@
+version: "3"
+services:
+
+  database:
+    build: ./database
+    image: database:latest
+    restart: unless-stopped
+    environment:
+    - "ACCEPT_EULA=Y"
+    - "SA_PASSWORD=${SA_PASSWORD}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    
+  backend:
+    build: ./zadanieBE
+    image: zadaniebe:latest
+    ports:
+    - "0.0.0.0:2396:80"
+    links:
+    - database
+    depends_on:
+    - database
+    restart: unless-stopped
+    environment:
+    - "CONNECTION_STRING=Server=database;Database=zadanie;User Id=sa;Password=${SA_PASSWORD}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  frontend:
+    build: ./zadanie-fe
+    image: zadanie-fe:latest
+    ports:
+    - "0.0.0.0:8888:80"
+    links:
+    - backend
+    depends_on:
+    - backend
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
